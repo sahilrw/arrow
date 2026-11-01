@@ -1143,13 +1143,12 @@ class TestArrowRange:
 
     def test_range_dst_fall_back_includes_repeated_hour(self):
         # Issue #1162: When iterating over a DST fall-back period, the repeated
-        # hour should not be skipped. A string with an explicit UTC offset and a
-        # named tzinfo kwarg should be converted (not replaced), preserving the
-        # correct UTC moment and fold.
+        # hour should not be skipped. Converting offset-aware times into the
+        # named zone must preserve the correct UTC moment and fold.
         import arrow as arrow_module
 
-        dts = arrow_module.get("2021-11-07T01:00:00-05:00", tzinfo="US/Eastern")
-        dte = arrow_module.get("2021-11-07T02:00:00-06:00", tzinfo="US/Eastern")
+        dts = arrow_module.get("2021-11-07T01:00:00-05:00").to("US/Eastern")
+        dte = arrow_module.get("2021-11-07T02:00:00-06:00").to("US/Eastern")
         result = list(arrow.Arrow.range("hours", dts, dte))
         assert len(result) == 3
         assert result[0].utcoffset().total_seconds() == -5 * 3600
